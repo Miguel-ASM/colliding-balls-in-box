@@ -119,11 +119,16 @@ function playPause() {
         clearInterval(mainTimeLoop);
         animationRunning = false;
         setBoardButton.disabled = false;
+        playPauseButton.innerHTML = '<i class="fa fa-play"></i>';
+
     } else{
         mainTimeLoop = setInterval(moveBalls,10);
         animationRunning = true;
         setBoardButton.disabled = true;
-    } 
+        playPauseButton.innerHTML = '<i class="fa fa-pause"></i>';
+    }
+    playPauseButton.classList.toggle('play');
+    playPauseButton.classList.toggle('pause');
 }
 
 // function that makes the balls move in the board (so far without collisions between balls)
