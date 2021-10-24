@@ -74,7 +74,7 @@ function setBoard(){
     while(board.balls.length < board.nBalls){
         // create a ball div 
         let ballDiv = document.createElement('div');
-        ballDiv.innerHTML = `<p>${1+board.balls.length}</p>`
+        ballDiv.innerHTML = `<p>${board.balls.length}</p>`
         boardDiv.appendChild(ballDiv);
         // style the ball
         ballDiv.classList.add('ball');
@@ -91,6 +91,7 @@ function setBoard(){
         } else{
             // create a ball object
             let ball = {
+                id:board.balls.length,
                 xCenter:x,
                 yCenter:y,
                 div:ballDiv,
@@ -122,7 +123,7 @@ function playPause() {
         playPauseButton.innerHTML = '<i class="fa fa-play"></i>';
 
     } else{
-        mainTimeLoop = setInterval(moveBalls,10);
+        mainTimeLoop = setInterval(moveBalls,1);
         animationRunning = true;
         setBoardButton.disabled = true;
         playPauseButton.innerHTML = '<i class="fa fa-pause"></i>';
@@ -133,11 +134,74 @@ function playPause() {
 
 // function that makes the balls move in the board (so far without collisions between balls)
 function moveBalls() {
+    // Take care of collisions with walls first
     board.balls.forEach(ball=>{
         ball.deltaX = ((ball.xCenter-ball.radius)*(ball.xCenter+ball.radius-100)>0) ? -ball.deltaX : ball.deltaX;
-        ball.deltaY = ((ball.yCenter-ball.radius)*(ball.yCenter+ball.radius-100)>0) ? -ball.deltaY : ball.deltaY;
+        ball.deltaY = ((ball.yCenter-ball.radius)*(ball.yCenter+ball.radius-100)>0) ? -ball.deltaY : ball.deltaY;  
+    })
+    // Now take care of collisions between balls
+    if (board.balls.length > 1){
+        board.balls.map( (v, i) => board.balls.slice(i + 1).map(w => [v, w]) ).flat().forEach(pair=>{
+            if ( ballsTouch(pair) ){
+                solvePairCollision(pair);
+            }
+        })
+    }
+    // Move the balls
+    board.balls.forEach(ball=>{
         ball.xCenter += ball.deltaX;
         ball.yCenter += ball.deltaY;
         ball.setBallDivPosition();
     })
+    
+}
+
+
+function solvePairCollision(pair) {
+    // balls positions
+    let q1 = [pair[0].xCenter,pair[0].yCenter];
+    let q2 = [pair[1].xCenter,pair[1].yCenter];
+    // balls speeds
+    let v1 = [pair[0].deltaX,pair[0].deltaY];
+    let v2 = [pair[1].deltaX,pair[1].deltaY];
+    // ballsDistance
+    let centerDistance = distance(q1,q2);
+    // collision coefficient
+    let c = dot(
+        q1.map((v,i)=>q1[i]-q2[i]),
+        v1.map((v,i)=>v1[i]-v2[i]),
+    )/centerDistance**2;
+    console.log(c);
+    // update the values of the velocities
+    [pair[0].deltaX,pair[0].deltaY] = v1.map( (v,i) => v1[i] - c * (q1[i]-q2[i]) );
+    [pair[1].deltaX,pair[1].deltaY] = v2.map( (v,i) => v2[i] + c * (q1[i]-q2[i]) );
+    // // Update the positions until the collision is solved
+    // while(ballsTouch(pair)){
+    //     pair[0].xCenter += pair[0].deltaX;
+    //     pair[0].yCenter += pair[0].deltaY;
+    //     pair[0].setBallDivPosition();
+
+    //     pair[1].xCenter += pair[1].deltaX;
+    //     pair[1].yCenter += pair[1].deltaY;
+    //     pair[1].setBallDivPosition();
+    // }
+    
+}
+
+
+function ballsTouch(pair){
+    let a = [pair[0].xCenter,pair[0].yCenter];
+    let b = [pair[1].xCenter,pair[1].yCenter];
+    if (distance(a,b) <= pair[0].radius + pair[1].radius){
+        console.log(`Balls ${pair[0].id} and ${pair[1].id} Have collided!!!`)
+        return true;
+    }
+}
+
+function dot(a, b){
+    return a.map((x, i) => a[i] * b[i]).reduce((m, n) => m + n);
+}
+
+function distance(a,b) {
+    return Math.sqrt( a.map( (x, i) => (a[i] - b[i] )**2 ).reduce((m, n) => m + n) )
 }
