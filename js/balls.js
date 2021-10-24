@@ -123,7 +123,7 @@ function playPause() {
         playPauseButton.innerHTML = '<i class="fa fa-play"></i>';
 
     } else{
-        mainTimeLoop = setInterval(moveBalls,1);
+        mainTimeLoop = setInterval(moveBalls,10);
         animationRunning = true;
         setBoardButton.disabled = true;
         playPauseButton.innerHTML = '<i class="fa fa-pause"></i>';
@@ -136,24 +136,30 @@ function playPause() {
 function moveBalls() {
     // Take care of collisions with walls first
     board.balls.forEach(ball=>{
-        ball.deltaX = ((ball.xCenter-ball.radius)*(ball.xCenter+ball.radius-100)>0) ? -ball.deltaX : ball.deltaX;
-        ball.deltaY = ((ball.yCenter-ball.radius)*(ball.yCenter+ball.radius-100)>0) ? -ball.deltaY : ball.deltaY;  
+        if (ballHitsHorizontalWall(ball)){console.log('hitting H wall');}
+        if (ballHitsVerticalWall(ball)){console.log('hitting V wall');}
+        ball.deltaX = ( ballHitsVerticalWall(ball) )   ? -ball.deltaX : ball.deltaX;
+        ball.deltaY = ( ballHitsHorizontalWall(ball) ) ? -ball.deltaY : ball.deltaY;
+        ball.xCenter += ball.deltaX;
+        ball.yCenter += ball.deltaY;
+        ball.setBallDivPosition();
     })
     // Now take care of collisions between balls
     if (board.balls.length > 1){
         board.balls.map( (v, i) => board.balls.slice(i + 1).map(w => [v, w]) ).flat().forEach(pair=>{
             if ( ballsTouch(pair) ){
                 solvePairCollision(pair);
+                // Update the positions until the collision is solved
+                pair[0].xCenter += pair[0].deltaX;
+                pair[0].yCenter += pair[0].deltaY;
+                pair[0].setBallDivPosition();
+
+                pair[1].xCenter += pair[1].deltaX;
+                pair[1].yCenter += pair[1].deltaY;
+                pair[1].setBallDivPosition();
             }
         })
     }
-    // Move the balls
-    board.balls.forEach(ball=>{
-        ball.xCenter += ball.deltaX;
-        ball.yCenter += ball.deltaY;
-        ball.setBallDivPosition();
-    })
-    
 }
 
 
@@ -171,21 +177,9 @@ function solvePairCollision(pair) {
         q1.map((v,i)=>q1[i]-q2[i]),
         v1.map((v,i)=>v1[i]-v2[i]),
     )/centerDistance**2;
-    console.log(c);
     // update the values of the velocities
     [pair[0].deltaX,pair[0].deltaY] = v1.map( (v,i) => v1[i] - c * (q1[i]-q2[i]) );
     [pair[1].deltaX,pair[1].deltaY] = v2.map( (v,i) => v2[i] + c * (q1[i]-q2[i]) );
-    // // Update the positions until the collision is solved
-    // while(ballsTouch(pair)){
-    //     pair[0].xCenter += pair[0].deltaX;
-    //     pair[0].yCenter += pair[0].deltaY;
-    //     pair[0].setBallDivPosition();
-
-    //     pair[1].xCenter += pair[1].deltaX;
-    //     pair[1].yCenter += pair[1].deltaY;
-    //     pair[1].setBallDivPosition();
-    // }
-    
 }
 
 
@@ -197,6 +191,38 @@ function ballsTouch(pair){
         return true;
     }
 }
+
+function ballHitsTopWall(ball) {
+    return ( ball.yCenter+ball.radius-100 >= 0 && ball.deltaY>0);
+}
+
+function ballHitsBottomWall(ball) {
+    return ( ball.yCenter-ball.radius <= 0 && ball.deltaY<0);
+}
+
+function ballHitsHorizontalWall(ball) {
+    return ballHitsTopWall(ball) || ballHitsBottomWall(ball);
+}
+
+
+
+function ballHitsRightWall(ball) {
+    return ( ball.xCenter + ball.radius - 100 >= 0 && ball.deltaX >0);
+}
+
+function ballHitsLeftWall(ball) {
+    return ( ball.xCenter-ball.radius <= 0 && ball.deltaX<0);
+}
+
+function ballHitsVerticalWall(ball) {
+    return ballHitsLeftWall(ball) || ballHitsRightWall(ball);
+}
+
+
+function ballHitsWall(ball){
+    return ballHitsHorizontalWall(ball) || ballHitsVerticalWall(ball);
+}
+
 
 function dot(a, b){
     return a.map((x, i) => a[i] * b[i]).reduce((m, n) => m + n);
