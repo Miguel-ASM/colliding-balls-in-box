@@ -1,8 +1,11 @@
 .ball{
     position: absolute;
     background-color: black;
-    width: 2.5em;
-    height: 2.5em;
     border-radius: 50%;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
 }
 

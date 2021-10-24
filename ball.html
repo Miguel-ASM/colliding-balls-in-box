@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        *{
+            box-sizing: border-box;
+        }
+
+        html, body{
+            margin: 0;
+            width: 100%;
+        }
+        body{
+            height: 100vh;
+            position: relative;
+        }
+        .big{
+            width: 40em;
+            height: 40em;
+            position: absolute;
+            background-color: lightblue;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .little{
+            position: absolute;
+            background-color: black;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div class="big">
+        <div class="little"></div>
+    </div> 
+    <script>
+        let ballDiv  = document.querySelector('.little');
+        let frameDiv = document.querySelector('.big') ;
+
+        let ballWidthPixels  = ballDiv.offsetWidth;
+        let ballHeightPixels = ballDiv.offsetHeight;
+
+        let frameWidthPixels  = frameDiv.offsetWidth;
+        let frameHeightPixels = frameDiv.offsetHeight;
+
+        let xInitial = 0.5 * (ballWidthPixels  / frameWidthPixels  ) + Math.random() * (1-ballWidthPixels  / frameWidthPixels);
+        let yInitial = 0.5 * (ballHeightPixels  / frameHeightPixels  ) + Math.random() * (1-ballHeightPixels  / frameHeightPixels);
+        
+        // ballDiv.style.left = '0%';
+        // ballDiv.style.bottom = '0%';
+
+        let ball = {
+            xCenter : xInitial,
+            yCenter : yInitial,
+            deltaX : 0.005,
+            deltaY : 0.002342,
+            setXY : function () {
+                this.xCenter = parseFloat(ballDiv.style.left)/100 + 0.5 * (ballWidthPixels  / frameWidthPixels  );
+                this.yCenter = parseFloat(ballDiv.style.bottom)/100 + 0.5 * (ballHeightPixels / frameHeightPixels );
+            },
+            setBallPosition : function () {
+                ballDiv.style.left   = 100*(this.xCenter - 0.5 * ballWidthPixels/frameWidthPixels )+'%';
+                ballDiv.style.bottom = 100*(this.yCenter - 0.5 * ballHeightPixels/frameHeightPixels )+'%';
+            }
+        }
+
+        ball.setBallPosition();
+
+        setInterval(()=>{
+            ball.deltaX = ((frameWidthPixels*ball.xCenter+0.5*ballWidthPixels-frameWidthPixels)*(frameWidthPixels*ball.xCenter-0.5*ballWidthPixels)>0) ? -ball.deltaX : ball.deltaX;
+            ball.deltaY = ((frameHeightPixels*ball.yCenter+0.5*ballHeightPixels-frameHeightPixels)*(frameHeightPixels*ball.yCenter-0.5*ballHeightPixels)>0) ? -ball.deltaY : ball.deltaY;
+            ball.xCenter += ball.deltaX;
+            ball.yCenter += ball.deltaY;
+            ball.setBallPosition();
+        },20)
+
+    </script>
+</body>
+</html>

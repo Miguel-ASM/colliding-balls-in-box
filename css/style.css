@@ -8,5 +8,8 @@ html, body{
 }
 body{
     height: 100vh;
-    position: relative;
+}
+
+#app{
+    display: flex;
 }
