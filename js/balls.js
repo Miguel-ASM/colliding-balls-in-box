@@ -186,7 +186,13 @@ function solvePairCollision(pair) {
 function ballsTouch(pair){
     let a = [pair[0].xCenter,pair[0].yCenter];
     let b = [pair[1].xCenter,pair[1].yCenter];
-    if (distance(a,b) <= pair[0].radius + pair[1].radius){
+
+    let relPosition = [pair[0].xCenter-pair[1].xCenter,pair[0].yCenter-pair[1].yCenter];
+    let relDelta = [pair[0].deltaX-pair[1].deltaX,pair[0].deltaY-pair[1].deltaY];
+
+    let ballsAreAproaching = dot(relPosition,relDelta) < 0;
+
+    if ( (distance(a,b) <= pair[0].radius + pair[1].radius) && ballsAreAproaching ){
         console.log(`Balls ${pair[0].id} and ${pair[1].id} Have collided!!!`)
         return true;
     }
